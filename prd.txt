@@ -1,0 +1,372 @@
+Given your requirements, I would design this as a **self-hosted AI inference platform for software development**, not as a chatbot server.
+
+## Requirements
+
+* ✅ Completely local
+* ✅ No OpenAI/Anthropic APIs
+* ✅ Docker Compose deployment
+* ✅ Ubuntu Server
+* ✅ Access via Tailscale
+* ✅ Works with VS Code and other IDEs
+* ✅ Easy to upgrade
+* ✅ Stable for daily development
+* ✅ Future-proof
+* ✅ Leaves room for additional services
+
+---
+
+# Final Tech Stack
+
+| Layer            | Technology                  | Why I chose it                                               |
+| ---------------- | --------------------------- | ------------------------------------------------------------ |
+| OS               | Ubuntu Server LTS           | Stable, minimal, production-ready                            |
+| Containerization | Docker Compose              | Simple, reproducible deployments                             |
+| VPN              | Tailscale                   | Secure access without exposing ports                         |
+| Inference Engine | **vLLM**                    | Best throughput and concurrency for a GPU like the RTX A6000 |
+| Main Model       | **Qwen3-Coder 30B**         | Excellent balance of coding quality and hardware fit         |
+| Web Interface    | Open WebUI                  | Mature, browser-based, Docker-friendly                       |
+| IDE              | Continue                    | Best local model support today                               |
+| Reverse Proxy    | Nginx *(optional)*          | Only if you want friendly URLs, TLS, or authentication       |
+| Storage          | Bind-mounted Docker volumes | Simple and portable                                          |
+| Monitoring       | None (initially)            | Add only if you actually need it                             |
+
+---
+
+# Why vLLM instead of llama.cpp?
+
+Both are excellent, but they target slightly different priorities.
+
+### llama.cpp
+
+Best for:
+
+* CPUs
+* GGUF models
+* Lightweight deployments
+* Lower-end hardware
+
+### vLLM
+
+Best for:
+
+* High-end NVIDIA GPUs
+* Multiple concurrent users
+* High throughput
+* Hugging Face models
+* Long-running inference servers
+
+An RTX A6000 is exactly the kind of hardware vLLM is designed to use well.
+
+---
+
+# Project Architecture
+
+```
+                          Development Laptop
+                        VS Code / JetBrains
+                                 │
+                             Continue
+                                 │
+                         Tailscale Network
+                                 │
+                    ┌────────────────────────┐
+                    │     Ubuntu Server      │
+                    │                        │
+                    │  Docker Compose        │
+                    │                        │
+                    │  ┌──────────────────┐  │
+                    │  │      vLLM        │  │
+                    │  │                  │  │
+                    │  │ Qwen3-Coder 30B  │  │
+                    │  └──────────────────┘  │
+                    │            │           │
+                    │            ▼           │
+                    │     OpenAI API         │
+                    │            │           │
+                    │     Open WebUI         │
+                    └────────────────────────┘
+```
+
+Everything points to a single inference service.
+
+---
+
+# Project Structure
+
+```
+ai-server/
+
+docker-compose.yml
+
+.env
+
+models/
+
+configs/
+
+vllm/
+
+open-webui/
+
+scripts/
+
+backups/
+
+README.md
+```
+
+Very clean.
+
+---
+
+# Phase 1 — Infrastructure
+
+Goal: Create the server foundation.
+
+Tasks:
+
+* Verify NVIDIA drivers
+* Verify CUDA
+* Verify Docker GPU runtime
+* Create project directory
+* Create Compose file
+* Create persistent volumes
+* Organize model storage
+
+Deliverable:
+
+> A clean Docker-based infrastructure ready for AI services.
+
+---
+
+# Phase 2 — Inference
+
+Goal:
+
+Deploy vLLM.
+
+Tasks:
+
+* Pull vLLM image
+* Mount model directory
+* Enable GPU
+* Configure tensor parallelism (if appropriate)
+* Expose OpenAI-compatible API
+
+Deliverable:
+
+```
+POST /v1/chat/completions
+```
+
+running locally.
+
+---
+
+# Phase 3 — Model
+
+Goal:
+
+Deploy Qwen3-Coder.
+
+Tasks:
+
+* Download model
+* Configure tokenizer
+* Test inference
+* Benchmark latency
+* Tune GPU memory utilization
+
+Deliverable:
+
+A production-ready coding model.
+
+---
+
+# Phase 4 — Web UI
+
+Deploy
+
+Open WebUI.
+
+Tasks:
+
+* Connect to vLLM
+* Verify chat
+* Test code generation
+* Configure user account
+
+Deliverable:
+
+A browser interface.
+
+---
+
+# Phase 5 — IDE Integration
+
+Install
+
+Continue
+
+Configure
+
+```
+Server URL
+
+↓
+
+Tailscale IP
+
+↓
+
+vLLM
+```
+
+Verify:
+
+* Chat
+* Edit
+* Refactor
+* Explain
+* Generate
+
+---
+
+# Phase 6 — Optimization
+
+Tune
+
+* context length
+* GPU memory utilization
+* max tokens
+* batching
+* concurrency
+
+Benchmark
+
+* first token latency
+* tokens/sec
+* response time
+
+---
+
+# Phase 7 — Expansion
+
+Possible additions:
+
+* Additional coding models
+* Embedding model for repository search
+* Reranker model
+* Local MCP servers (filesystem, Git, terminal, etc.)
+* Authentication
+* HTTPS
+* Automatic backups
+
+Only add these if you actually need them.
+
+---
+
+# What I Would **Not** Build Initially
+
+I would deliberately avoid adding these at the beginning:
+
+❌ Kubernetes
+
+❌ Prometheus
+
+❌ Grafana
+
+❌ Redis
+
+❌ PostgreSQL
+
+❌ Elasticsearch
+
+❌ RabbitMQ
+
+❌ Kafka
+
+❌ LiteLLM
+
+❌ Traefik
+
+❌ Multiple inference engines
+
+They all solve problems that you don't yet have.
+
+---
+
+# Expected Workflow
+
+```
+Open VS Code
+
+↓
+
+Ask
+
+↓
+
+Continue
+
+↓
+
+vLLM
+
+↓
+
+Qwen3-Coder
+
+↓
+
+Generate code
+
+↓
+
+Insert directly into editor
+```
+
+No cloud involved.
+
+---
+
+# Future Evolution
+
+Once the foundation is stable, I'd expand horizontally rather than replacing components:
+
+```
+                Continue
+
+                     │
+
+               vLLM Server
+
+      ┌──────────┼──────────┐
+
+      ▼          ▼          ▼
+
+Qwen3-Coder  DeepSeek   Embedding Model
+
+      │          │          │
+
+      └──────────┼──────────┘
+
+            Future Services
+```
+
+---
+
+# One architectural improvement I'd make from the start
+
+The only thing I'd add beyond your current requirements is a **local embedding model** (for example, a lightweight sentence embedding model served alongside vLLM).
+
+Why?
+
+Modern coding assistants aren't just generating code—they also search your repository, retrieve relevant files, and provide context-aware answers. That retrieval step is powered by embeddings, not the main LLM.
+
+So I'd plan for two model categories from day one:
+
+* **Inference model:** Qwen3-Coder (code generation and reasoning)
+* **Embedding model:** for semantic code search and repository indexing
+
+Even if you don't enable repository indexing immediately, leaving room for an embedding service in your Docker Compose layout will make it much easier to evolve the platform into a genuinely powerful local coding assistant later.

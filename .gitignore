@@ -1,0 +1,16 @@
+# Ignore environment variables
+.env
+**/.env
+
+# Ignore database and model files
+ai-server/models/*
+!ai-server/models/.gitkeep
+
+ai-server/open-webui/*
+!ai-server/open-webui/.gitkeep
+
+ai-server/vllm/*
+!ai-server/vllm/.gitkeep
+
+ai-server/backups/*
+!ai-server/backups/.gitkeep
