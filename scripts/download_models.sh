@@ -18,7 +18,9 @@ clone_model() {
         echo "    Already exists, pulling latest..."
         git -C "$dest" pull
     else
-        GIT_LFS_SKIP_SMUDGE=1 git clone "$MIRROR/$repo" "$dest"
+        # Embed token in URL to avoid interactive password prompt
+        local auth_url="https://user:${HF_TOKEN}@hf-mirror.com/${repo}"
+        GIT_LFS_SKIP_SMUDGE=1 git clone "$auth_url" "$dest"
         cd "$dest" && git lfs pull && cd -
     fi
     echo ">>> Done: $repo"
