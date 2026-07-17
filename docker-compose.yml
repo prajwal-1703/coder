@@ -9,7 +9,7 @@ services:
     volumes:
       - ./models:/models
     command: >
-      --model /models/Qwen3-32B-Instruct
+      --model /models/Qwen3-32B
       --gpu-memory-utilization 0.90
       --max-model-len 8192
       --host 0.0.0.0
