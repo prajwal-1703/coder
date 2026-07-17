@@ -6,11 +6,10 @@ services:
     environment:
       - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
       - HF_HUB_OFFLINE=1
-      - HF_ENDPOINT=${HF_ENDPOINT:-https://huggingface.co}
     volumes:
-      - ./models:/root/.cache/huggingface
+      - ./models:/models
     command: >
-      --model ${MODEL_NAME}
+      --model /models/Qwen3-32B-Instruct
       --gpu-memory-utilization 0.90
       --max-model-len 8192
       --host 0.0.0.0
@@ -38,11 +37,10 @@ services:
     environment:
       - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
       - HF_HUB_OFFLINE=1
-      - HF_ENDPOINT=${HF_ENDPOINT:-https://huggingface.co}
     volumes:
-      - ./models:/data
+      - ./models:/models
     command: >
-      --model-id ${EMBEDDING_MODEL_NAME}
+      --model-id /models/bge-large-en-v1.5
       --port 8080
     shm_size: "2gb"
     deploy:
@@ -56,8 +54,8 @@ services:
       test: ["CMD-SHELL", "curl -f http://127.0.0.1:8080/health || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 10
+      start_period: 60s
     restart: unless-stopped
 
   open-webui:
@@ -75,7 +73,6 @@ services:
       - HF_HUB_OFFLINE=1
     volumes:
       - ./open-webui:/app/backend/data
-      - ./models:/root/.cache/huggingface
     depends_on:
       vllm:
         condition: service_healthy
