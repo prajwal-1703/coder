@@ -1,0 +1,84 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: vllm
+    network_mode: host
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
+      - HF_HUB_OFFLINE=1
+      - HF_ENDPOINT=${HF_ENDPOINT:-https://huggingface.co}
+    volumes:
+      - ./models:/root/.cache/huggingface
+    command: >
+      --model ${MODEL_NAME}
+      --gpu-memory-utilization 0.90
+      --max-model-len 8192
+      --host 0.0.0.0
+      --port 8000
+    shm_size: "16gb"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    restart: unless-stopped
+
+  embedding:
+    image: ghcr.io/huggingface/text-embeddings-inference:latest
+    container_name: embedding
+    network_mode: host
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
+      - HF_HUB_OFFLINE=1
+      - HF_ENDPOINT=${HF_ENDPOINT:-https://huggingface.co}
+    volumes:
+      - ./models:/data
+    command: >
+      --model-id ${EMBEDDING_MODEL_NAME}
+      --port 8080
+    shm_size: "2gb"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    network_mode: host
+    environment:
+      - PORT=${WEBUI_PORT:-3000}
+      - OPENAI_API_BASE_URL=http://127.0.0.1:8000/v1
+      - OPENAI_API_KEY=sk-local-vllm
+      - WEBUI_AUTH=False
+      - OPENAI_API_BASE_URL_EMBEDDING=http://127.0.0.1:8080/v1
+      - RAG_EMBEDDING_ENGINE=openai
+      - RAG_EMBEDDING_MODEL=${EMBEDDING_MODEL_NAME}
+      - HF_HUB_OFFLINE=1
+    volumes:
+      - ./open-webui:/app/backend/data
+      - ./models:/root/.cache/huggingface
+    depends_on:
+      vllm:
+        condition: service_healthy
+      embedding:
+        condition: service_healthy
+    restart: unless-stopped
