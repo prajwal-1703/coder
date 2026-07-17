@@ -18,8 +18,8 @@ clone_model() {
         echo "    Already exists, pulling latest..."
         git -C "$dest" pull
     else
-        # Embed token in URL to avoid interactive password prompt
-        local auth_url="https://user:${HF_TOKEN}@hf-mirror.com/${repo}"
+        # Use huggingface.co directly with token embedded in URL (mirror doesn't support token auth)
+        local auth_url="https://user:${HF_TOKEN}@huggingface.co/${repo}"
         GIT_LFS_SKIP_SMUDGE=1 git clone "$auth_url" "$dest"
         cd "$dest" && git lfs pull && cd -
     fi
