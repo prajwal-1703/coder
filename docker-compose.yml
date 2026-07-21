@@ -8,12 +8,25 @@ services:
       - HF_HUB_OFFLINE=1
     volumes:
       - ./models:/models
-    command: >
-      --model /models/Qwen3-32B
-      --gpu-memory-utilization 0.90
-      --max-model-len 8192
-      --host 0.0.0.0
-      --port 8000
+    command:
+      - --model
+      - /models/${VLLM_MODEL_DIR}
+      - --quantization
+      - ${VLLM_QUANTIZATION}
+      - --load-format
+      - ${VLLM_LOAD_FORMAT}
+      - --gpu-memory-utilization
+      - "0.90"
+      - --max-model-len
+      - "8192"
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --enable-prefix-caching
+      - --enable-auto-tool-choice
+      - --tool-call-parser
+      - hermes
     shm_size: "16gb"
     deploy:
       resources:

@@ -81,6 +81,7 @@ clone_model() {
 
 clone_model "BAAI/bge-large-en-v1.5" "$PROJECT_DIR/models/bge-large-en-v1.5"
 clone_model "Qwen/Qwen3-32B"         "$PROJECT_DIR/models/Qwen3-32B"
+clone_model "Qwen/Qwen3-32B-AWQ"     "$PROJECT_DIR/models/Qwen3-32B-AWQ"
 
 # ── Step 2: Pull Docker images ────────────────────────────────────────────────
 step "Step 2: Pulling Docker images"
