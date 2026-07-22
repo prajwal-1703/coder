@@ -11,6 +11,8 @@ services:
     command:
       - --model
       - /models/${VLLM_MODEL_DIR}
+      - --served-model-name
+      - ${VLLM_MODEL_DIR}
       - --quantization
       - ${VLLM_QUANTIZATION}
       - --load-format
