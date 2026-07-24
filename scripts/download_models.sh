@@ -19,7 +19,12 @@ clone_model() {
         git -C "$dest" pull
     else
         # Use huggingface.co directly with token embedded in URL (mirror doesn't support token auth)
-        local auth_url="https://user:${HF_TOKEN}@huggingface.co/${repo}"
+        local token="${HUGGING_FACE_HUB_TOKEN:-$HF_TOKEN}"
+        if [ -n "$token" ]; then
+            local auth_url="https://user:${token}@huggingface.co/${repo}"
+        else
+            local auth_url="https://huggingface.co/${repo}"
+        fi
         GIT_LFS_SKIP_SMUDGE=1 git clone "$auth_url" "$dest"
         cd "$dest" && git lfs pull && cd -
     fi
