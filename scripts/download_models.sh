@@ -30,6 +30,7 @@ mkdir -p "$DATA_DIR"
 
 clone_model "BAAI/bge-large-en-v1.5"   "$DATA_DIR/bge-large-en-v1.5"
 clone_model "Qwen/Qwen3-32B"            "$DATA_DIR/Qwen3-32B"
+clone_model "Qwen/Qwen2.5-Coder-3B-Instruct" "$DATA_DIR/Qwen2.5-Coder-3B-Instruct"
 
 echo ""
 echo "All models downloaded successfully to $DATA_DIR"
