@@ -6,6 +6,7 @@ services:
     environment:
       - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
       - HF_HUB_OFFLINE=1
+      - VLLM_USE_V1=0
     volumes:
       - ./models:/models
     command:
@@ -18,7 +19,7 @@ services:
       - --load-format
       - ${VLLM_LOAD_FORMAT}
       - --gpu-memory-utilization
-      - "0.75"
+      - "0.70"
       - --max-model-len
       - "16384"
       - --host
@@ -52,6 +53,7 @@ services:
     environment:
       - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
       - HF_HUB_OFFLINE=1
+      - VLLM_USE_V1=0
     volumes:
       - ./models:/models
     command:
@@ -60,7 +62,7 @@ services:
       - --served-model-name
       - ${VLLM_CODER_MODEL_DIR}
       - --gpu-memory-utilization
-      - "0.15"
+      - "0.20"
       - --max-model-len
       - "8192"
       - --host
